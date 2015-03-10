@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Pimp my Pizza.com</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Loading Bootstrap -->
+    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+    <!-- Loading Flat UI -->
+    <link href="css/flat-ui.css" rel="stylesheet">
+    <link href="css/theme.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
+
+    <script src="js/jquery-2.1.1.min.js"></script>
+    <script src="js/app.js"></script>
+  </head>
+  <body>
+      <script>
+          function priceCalculation(){
+	var type = +$('input[name=type]:checked').data('price');
+	var pate = +$('input[name=pate]:checked').data('price');
+	var slices = +$('.nb-parts input').val();
+	var extra = total = 0;
+	$('input[name=extra]:checked').each(function() {
+		extra += $(this).data('price');
+	});
+
+	var nb_pizza = slices/6;
+	// Arrondi du totla à l'euro supérieur
+	var total = (nb_pizza* (type + pate + extra)).toFixed(2);
+	$('.stick-right p').text(total+'€');
+}
+
+// DRY : D'ont Repeat Yourself
+function showDescription(){
+	$(this).find('.description').toggle();
+}
+
+
+jQuery(document).ready(function(){
+
+	// Calcul le prix au chargement de la page
+	priceCalculation();
+
+	// Affiche la description d'une pizza
+	$('.pizza-type label').hover(showDescription, showDescription);
+
+	// Affiche le bon nombre de parts
+	$('.nb-parts input').on('keyup', function(){
+		// Suppression de toutes les pizzas, pour repartir de zero
+		$('.pizza-pict').remove();
+		// On enregirstre dans une variable l'élément HTML qu'on va dupliquer
+		var pizza = $('<span class="pizza-pict"></span>');
+
+		slices = +$(this).val();
+		// Clone permet de dupliquer l'élément HTML, sinon ce serait toujours le même
+		for(i = 0; i < slices/6; i++) $(this).after(pizza.clone().addClass('pizza-6'));
+		// La dernière pizza n'est peut-etre pas complête : on affiche juste le bon nombre de parts
+		if(slices%6 != 0) $('.pizza-pict').last().removeClass('pizza-6').addClass('pizza-'+slices%6);
+		// Recalcul du prix total
+		priceCalculation();
+	});
+
+	// Affiche les infos client au clic sur le premier bouton
+	$('button.next-step').click(function(){
+		$('.infos-client').slideDown();
+		// Supprime le bouton du DOM, pour qu'on ne puisse plus cliquer dessus
+		$(this).remove();
+	});
+
+	// Ajoute un champ adresse complémentaire
+	$('button.add').click(function(){
+		var input = $('<br/><input type="text"/>');
+		$(this).before(input);
+	});
+
+	// Efface toute la page, et affiche un message de remerciement 
+	$('button.done').click(function(){
+		$('.stick-right').remove();
+		$('.main').html("<h3>Merci "+$('.infos-client').find('input').first().val()+" !<br/>C'est livré dans 15 minutes.</h3>");
+	});
+
+	// Actualise le prix du panier
+	$("input").on('click', function(){
+		priceCalculation();
+	});
+});
+      </script>
+    <div class="container">
+        <div class="headline">
+            <h1 class="logo">
+              <div class="logo"></div>
+              Pimp my Pizza
+              <small>Cooked with love</small>
+            </h1>
+        </div>
+        <div class="row typography-row main">
+
+            <div class="type pizza-type">
+                <span class="text-note">Recette</span>
+                <label>
+                    <input type="radio" name="type" value="margherita" data-toggle="radio" data-price="8" checked>
+                    Margherita (8€)
+                    <span class="description no-display">Tomate, mozzarella, basilic, huile d'olive</span>
+                </label>
+
+                <label>
+                    <input type="radio" name="type" value="reine" data-toggle="radio" data-price="10">
+                    Reine (10€)
+                    <span class="description no-display ">Mozzarella, champignons, artichaut, jambon, olives, huile d'olive</span>
+                </label>
+                
+                <label>
+                    <input type="radio" name="type" value="quattro stagioni" data-toggle="radio" data-price="12">
+                    Quattro stagioni (12€)
+                    <span class="description no-display ">Tomate, mozzarella, basilic, huile d'olive</span>
+                </label>
+
+                <label>
+                    <input type="radio" name="type" value="sicilienne" data-toggle="radio" data-price="11">
+                    Sicilienne (11€)
+                    <span class="description no-display ">Tomate, mozzarella, basilic, anchois, câpres,champignon</span>
+                </label>
+            </div>
+
+            <div class="type nb-parts">
+                <span class="text-note">Nombre de parts</span>
+                <input type="text" value="1"/>
+                <span class="pizza-1 pizza-pict"></span>
+            </div>
+
+            <div class="type">
+                <span class="text-note">Pâte</span>
+                <label><input type="radio" name="pate" value="1" data-toggle="radio" data-price="0" checked>Classique</label>
+                <label><input type="radio" name="pate" value="1" data-toggle="radio" data-price="2">Extra fine (+2€)</label>
+                <label><input type="radio" name="pate" value="1" data-toggle="radio" data-price="3">Epaisse (+3€)</label>
+            </div>
+
+            <div class="type">
+                <span class="text-note">Extras</span>
+                    <label><input name="extra" type="checkbox" value="1" data-price="1" data-toggle="checkbox">Olives (+1€)</label>
+                    <label><input name="extra" type="checkbox" value="2" data-price="4" data-toggle="checkbox">Anchois (+4€)</label>
+                    <label><input name="extra" type="checkbox" value="3" data-price="3" data-toggle="checkbox">Chèvre (+3€)</label>
+                    <label><input name="extra" type="checkbox" value="4" data-price="1" data-toggle="checkbox">Piment (+1€)</label>
+            </div>
+
+            <div class="infos-client no-display ">
+                <div class="type">
+                    <span class="text-note">Prénom</span>
+                    <input type="text"/>
+                </div>
+                <div class="type">
+                    <span class="text-note">Adresse</span>
+                    <input type="text"/>
+                    <button class="btn btn-default add">Ajouter une autre ligne d'adresse</button>
+                </div>
+                <div class="type">
+                    <span class="text-note">Code Postal</span>
+                    <input type="number"/>
+                </div>
+                <br />
+                <button class="btn btn-success done">Allez hop, j'ai très faim !</button>
+            </div>
+            <p><small>Les prix sont affichés pour 1 pizza entière.</small></p>
+            <button class="btn btn-success next-step">Etape suivante</button>
+        </div>
+    </div>
+    <!-- /.container -->
+
+    <div class="stick-right">
+      <div class="tile">
+        <img src="images/icons/svg/paper-bag.svg" class="tile-image big-illustration">
+        <h3 class="tile-title">Total</h3>
+        <p>0 €</p>
+        <a class="btn btn-primary btn-large btn-block" href="#">Payer</a>
+      </div>
+    </div>
+    
+  </body>
+</html>
